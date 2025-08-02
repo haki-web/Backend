@@ -15,26 +15,40 @@ class RegisterRequest(BaseModel):
     referred_by: str = ""
 
 @app.post("/register")
-def register_user(data: RegisterRequest):
-    # 1. check if user exists
-    user = supabase.table("users").select("*").eq("id", data.user_id).execute()
-    if user.data:
-        return {"message": "Already registered."}
+async def register_user(data: RegisterRequest):
+    try:
+        # 1. Check if user exists
+        user = supabase.table("users").select("*").eq("id", data.user_id).execute()
+        if user.data:
+            return {"message": "Already registered."}
 
-    # 2. create user
-    supabase.table("users").insert({
-        "id": data.user_id,
-        "username": data.username,
-        "points": 0,
-        "referral_count": 0,
-        "referred_by": data.referred_by or None
-    }).execute()
+        # 2. Create user
+        supabase.table("users").insert({
+            "id": data.user_id,
+            "username": data.username,
+            "points": 0,
+            "referral_count": 0,
+            "referred_by": data.referred_by or None
+        }).execute()
 
-    # 3. If referred_by is valid, update points
-    if data.referred_by:
-        ref_user = supabase.table("users").select("*").eq("id", data.referred_by).execute()
-        if ref_user.data:
-            supabase.table("users").update({
+        # 3. If referred_by is valid, update points
+        if data.referred_by:
+            ref_user = supabase.table("users").select("*").eq("id", data.referred_by).execute()
+            if ref_user.data:
+                supabase.table("users").update({
+                    "points": ref_user.data[0]["points"] + 10,
+                    "referral_count": ref_user.data[0]["referral_count"] + 1
+                }).eq("id", data.referred_by).execute()
+
+                supabase.table("referrals").insert({
+                    "user_id": data.user_id,
+                    "referred_by": data.referred_by
+                }).execute()
+
+        return {"message": "Registered successfully"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))            supabase.table("users").update({
                 "points": ref_user.data[0]["points"] + 10,
                 "referral_count": ref_user.data[0]["referral_count"] + 1
             }).eq("id", data.referred_by).execute()
