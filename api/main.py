@@ -17,13 +17,13 @@ class RegisterRequest(BaseModel):
 @app.post("/register")
 async def register_user(data: RegisterRequest):
     try:
-        # 1. Check if user exists
+        # Check if user exists
         user = supabase.table("users").select("*").eq("id", data.user_id).execute()
         if user.data:
             return {"message": "Already registered."}
 
-        # 2. Create user
-        supabase.table("users").insert({
+        print("🚀 Inserting user...")
+        result = supabase.table("users").insert({
             "id": data.user_id,
             "username": data.username,
             "points": 0,
@@ -31,7 +31,9 @@ async def register_user(data: RegisterRequest):
             "referred_by": data.referred_by or None
         }).execute()
 
-        # 3. If referred_by is valid, update points
+        print("✅ Insert result:", result)
+
+        # Optional: referral system
         if data.referred_by:
             ref_user = supabase.table("users").select("*").eq("id", data.referred_by).execute()
             if ref_user.data:
@@ -46,20 +48,10 @@ async def register_user(data: RegisterRequest):
                 }).execute()
 
         return {"message": "Registered successfully"}
-    
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))            supabase.table("users").update({
-                "points": ref_user.data[0]["points"] + 10,
-                "referral_count": ref_user.data[0]["referral_count"] + 1
-            }).eq("id", data.referred_by).execute()
-
-            supabase.table("referrals").insert({
-                "user_id": data.user_id,
-                "referred_by": data.referred_by
-            }).execute()
-
-    return {"message": "Registered successfully"}
-
+        print("🔥 Error during register_user:", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 @app.get("/get_points/{user_id}")
 def get_points(user_id: str):
     user = supabase.table("users").select("points").eq("id", user_id).execute()
