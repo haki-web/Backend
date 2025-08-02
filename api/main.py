@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from supabase import create_client, Client
 
-SUPABASE_URL = "https://ivncxzpwluxyaujhpnxo.supabase.com"
+SUPABASE_URL = "https://ivncxzpwluxyaujhpnxo.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2bmN4enB3bHV4eWF1amhwbnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxNDA1MzUsImV4cCI6MjA2OTcxNjUzNX0.pK3gYHumts_qEmd9QrQi6JbGpzk1P_oM-Odn2l0bECI"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
