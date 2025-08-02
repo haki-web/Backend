@@ -16,6 +16,7 @@ class RegisterRequest(BaseModel):
 
 @app.post("/register")
 async def register_user(data: RegisterRequest):
+    print(f"Register request: user_id={data.user_id}, username={data.username}, referred_by={data.referred_by}")
     try:
         # Check if user exists
         user = supabase.table("users").select("*").eq("id", data.user_id).execute()
@@ -52,6 +53,7 @@ async def register_user(data: RegisterRequest):
     except Exception as e:
         print("🔥 Error during register_user:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/get_points/{user_id}")
 def get_points(user_id: str):
     user = supabase.table("users").select("points").eq("id", user_id).execute()
